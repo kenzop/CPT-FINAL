@@ -1,12 +1,17 @@
 def setup():
-    global MEGAMAN_POSITION, PAGE, LEVEL, rectx, recty, title_background, instructions_background, logo
-    global megaman_jump_left, megaman_jump_right, megaman_still_left, megaman_still_right, zero_deaths
+    global MEGAMAN_POSITION, PAGE, LEVEL, TIMER, DEATHS, rectx, recty, title_background, instructions_background, logo
+    global zero_deaths, level1_spawn_point
+    global unkillable, unkillable_enemies, unkillable_enemies_size, megaman_size, unkillable_enemies_spawn_points
     size(1280, 480)
+    noStroke()
     MEGAMAN_POSITION = [50, 300]
     PAGE = 1
     LEVEL = 1
+    TIMER = 300
+    DEATHS = 0
     rectx = 200
     recty = 100
+    level1_spawn_point = [50, 300]
     title_background = loadImage('title_screen.jpg')
     title_background.resize(1280, 480)
     instructions_background = loadImage('instructions_background.png')
@@ -15,16 +20,12 @@ def setup():
     logo.resize(400, 180)
     zero_deaths = loadImage('zero_deaths.jpeg')
     zero_deaths.resize(75, 75)
-    megaman_jump_left = loadImage('jump_left.png')
-    megaman_jump_left.resize(200, 100)
-    megaman_jump_right = loadImage('jump_right.png')
-    megaman_jump_right.resize(200, 100)
-    megaman_still_left = loadImage('still_left.png')
-    megaman_still_left.resize(200, 100)
-    megaman_still_right = loadImage('still_right.png')
-    megaman_still_right.resize(200, 100)
-
-
+    megaman_size = 50
+    unkillable_enemies_size = 50
+    unkillable = loadImage('unkillable.png')
+    unkillable.resize(unkillable_enemies_size, unkillable_enemies_size)
+    unkillable_enemies = [[800, 300], [700, 250], [800, 300]]
+    unkillable_enemies_spawn_points = [[800, 300], [700, 250], [800, 300]]
 # Used to track user inputs and move megaman accordingly
 def keyPressed():
     global MEGAMAN_POSITION
@@ -103,21 +104,40 @@ def page2():
 
 
 def level1_spikes(x, y, mid):
-    fill(255) #CHANGE
+    fill(211,211,211)
     for spike in range(10):
         triangle(x, y, x+2*mid, y, x+mid, y-mid*2)
         x += 2*mid
 
 
+def unkillable_enemy1_hitbox():
+    global MEGAMAN_POSITION, DEATHS, unkillable_enemies
+    if MEGAMAN_POSITION[0]+megaman_size/1.25 >= unkillable_enemies[0][0] and MEGAMAN_POSITION[0] <= unkillable_enemies[0][0]+unkillable_enemies_size:
+           MEGAMAN_POSITION = level1_spawn_point[:]
+           unkillable_enemies = unkillable_enemies_spawn_points
+           DEATHS += 1
+       
+       
 def page3():
-    background(0)
-    rect(MEGAMAN_POSITION[0], MEGAMAN_POSITION[1], 50, 50)
-    level1_spikes(150, 350, 10)
+    global LEVEL, PAGE
+    if LEVEL == 1:
+        background(0)
+        fill(255)
+        rect(MEGAMAN_POSITION[0], MEGAMAN_POSITION[1], megaman_size, megaman_size)
+        level1_spikes(150, 350, 10)
+        noFill()
+        # Unkillable enemy and its hitbox
+        rect(unkillable_enemies[0][0], unkillable_enemies[0][1], unkillable_enemies_size, unkillable_enemies_size)
+        image(unkillable, unkillable_enemies[0][0], unkillable_enemies[0][1])
+        unkillable_enemies[0][0] -= 1
+        unkillable_enemy1_hitbox()
         
         
 def draw():
+    global DEATHS
     if PAGE == 1:
         page1()
+        DEATHS = 0
     elif PAGE == 2:
         page2()
     elif PAGE == 3:
