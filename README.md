@@ -1,2 +1,2 @@
 # CPT-FINAL
-h
+Welcome to my game! All assets that need to be downloaded to play this game can be found in the data folder under
