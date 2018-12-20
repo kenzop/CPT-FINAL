@@ -26,6 +26,8 @@ def setup():
     unkillable.resize(unkillable_enemies_size, unkillable_enemies_size)
     unkillable_enemies = [[800, 300], [700, 250], [800, 300]]
     unkillable_enemies_spawn_points = [[800, 300], [700, 250], [800, 300]]
+    
+    
 # Used to track user inputs and move megaman accordingly
 def keyPressed():
     global MEGAMAN_POSITION
@@ -90,6 +92,8 @@ def page2():
     text("Press the left and right arrow keys to move and the up key to jump.", 250, 175)
     text("Press the space bar to shoot enemies out of the way.  Be careful though, some enemies can't be killed.", 250, 250)
     text("Can you beat the game with zero deaths?", 250, 325) 
+    text("(UNKILLABLE)", 1075, 210)
+    image(unkillable, 1100, 225)
 
 # Code for start button in the instructions menu
     fill(255,255,0)
@@ -113,9 +117,9 @@ def level1_spikes(x, y, mid):
 def unkillable_enemy1_hitbox():
     global MEGAMAN_POSITION, DEATHS, unkillable_enemies
     if MEGAMAN_POSITION[0]+megaman_size/1.25 >= unkillable_enemies[0][0] and MEGAMAN_POSITION[0] <= unkillable_enemies[0][0]+unkillable_enemies_size:
-           MEGAMAN_POSITION = level1_spawn_point[:]
-           unkillable_enemies = unkillable_enemies_spawn_points
-           DEATHS += 1
+        MEGAMAN_POSITION = level1_spawn_point[:]
+        unkillable_enemies[0][0] = unkillable_enemies_spawn_points[0][0]
+        DEATHS += 1
        
        
 def page3():
@@ -131,7 +135,10 @@ def page3():
         image(unkillable, unkillable_enemies[0][0], unkillable_enemies[0][1])
         unkillable_enemies[0][0] -= 1
         unkillable_enemy1_hitbox()
-        
+        if MEGAMAN_POSITION[0] > 1200:
+            LEVEL = 2 
+    if LEVEL == 2:
+        background(0)
         
 def draw():
     global DEATHS
