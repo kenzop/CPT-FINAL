@@ -1,5 +1,6 @@
 def setup():
-    global MEGAMAN_POSITION, PAGE, LEVEL, TIMER, DEATHS, rectx, recty, title_background, instructions_background, logo
+    global MEGAMAN_POSITION, PAGE, LEVEL, TIMER, DEATHS, GRAVITY, LEFT_PRESSED
+    global RIGHT_PRESSED, UP_PRESSED, rectx, recty, title_background, instructions_background, logo
     global zero_deaths, level1_spawn_point
     global unkillable, unkillable_enemies, unkillable_enemies_size, megaman_size, unkillable_enemies_spawn_points
     size(1280, 480)
@@ -9,6 +10,8 @@ def setup():
     LEVEL = 1
     TIMER = 300
     DEATHS = 0
+    GRAVITY = 5
+    LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED = False, False, False
     rectx = 200
     recty = 100
     level1_spawn_point = [50, 300]
@@ -30,11 +33,23 @@ def setup():
     
 # Used to track user inputs and move megaman accordingly
 def keyPressed():
-    global MEGAMAN_POSITION
+    global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED
     if keyCode == RIGHT:
-        MEGAMAN_POSITION[0] += 3
-    if keyCode == LEFT:
-        MEGAMAN_POSITION[0] -= 3
+        RIGHT_PRESSED = True
+    elif keyCode == LEFT:
+        LEFT_PRESSED = True
+    if keyCode == UP:
+        UP_PRESSED = True
+
+
+def keyReleased():
+    global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, MEGAMAN_POSITION
+    if keyCode == RIGHT:
+        RIGHT_PRESSED = False
+    elif keyCode == LEFT:
+        LEFT_PRESSED = False
+    if keyCode == UP:
+        UP_PRESSED = False
 
 
 # Used to check the mouse's location.  This is used on the intro screen 
@@ -116,14 +131,22 @@ def level1_spikes(x, y, mid):
 
 def unkillable_enemy1_hitbox():
     global MEGAMAN_POSITION, DEATHS, unkillable_enemies
-    if MEGAMAN_POSITION[0]+megaman_size/1.25 >= unkillable_enemies[0][0] and MEGAMAN_POSITION[0] <= unkillable_enemies[0][0]+unkillable_enemies_size:
+    if MEGAMAN_POSITION[0]+megaman_size/1.25 >= unkillable_enemies[0][0] and MEGAMAN_POSITION[0] <= unkillable_enemies[0][0]+unkillable_enemies_size and MEGAMAN_POSITION[1] > unkillable_enemies[0][1] and MEGAMAN_POSITION[1] < unkillable_enemies[0][1]+unkillable_enemies_size:
         MEGAMAN_POSITION = level1_spawn_point[:]
         unkillable_enemies[0][0] = unkillable_enemies_spawn_points[0][0]
         DEATHS += 1
        
        
 def page3():
-    global LEVEL, PAGE
+    global LEVEL, PAGE, MEGAMAN_POSITION
+
+    if RIGHT_PRESSED == True:
+        MEGAMAN_POSITION[0] += 3
+    if LEFT_PRESSED == True:
+        MEGAMAN_POSITION[0] -= 3
+    if UP_PRESSED == True:
+        MEGAMAN_POSITION[1] -= 3
+
     if LEVEL == 1:
         background(0)
         fill(255)
