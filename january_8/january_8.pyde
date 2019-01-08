@@ -1,9 +1,4 @@
-'''
-Completed on 1/8/19.  The player shoots a bullet that originates from its position when firing.  
-After some time, bullets respawn.  NOTE: bullet collision is not yet complete
-'''
-
-def setup():
+ef setup():
     global MEGAMAN_POSITION, PAGE, LEVEL, TIMER, DEATHS, GRAVITY, LEFT_PRESSED
     global RIGHT_PRESSED, UP_PRESSED, rectx, recty, title_background, instructions_background, logo
     global zero_deaths, level1_spawn_point, on_screen_bullet, bulletX, bulletY, bullet_timer, draw_bullet
