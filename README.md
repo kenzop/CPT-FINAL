@@ -1,3 +1,2 @@
 # CPT-FINAL
-Welcome to my game! All assets that need to be downloaded to play this game can be found in the data folder under CPT under the master branch.
-The code is in CPT.pyde
+Here is both a (somewhat) daily log of all the progress made day by day as well as a collection of some of the progress made on important functions
