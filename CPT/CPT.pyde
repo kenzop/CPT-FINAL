@@ -1,16 +1,25 @@
 def setup():
     global MEGAMAN_POSITION, PAGE, LEVEL, TIMER, RESET_TIMER, DEATHS, GRAVITY, LEFT_PRESSED, FLOOR
-    global RIGHT_PRESSED, UP_PRESSED, rectx, recty, title_background, instructions_background, logo
+    global RIGHT_PRESSED, UP_PRESSED, stars, rectx, recty, title_background, instructions_background, logo
     global zero_deaths, megaman_spawn_points, on_screen_bullet, bulletX, bulletY, bullet_size, bullet_timer, draw_bullet
     global unkillable, unkillable_enemies, unkillable_enemies_size, megaman_size, unkillable_enemies_spawn_points
-    global in_air, airtime, floor_collision, saw1_X, saw1_Y, saw1_up, saw_size
+    global in_air, airtime, floor_collision, saw1_X, saw1_Y, saw1_up, saw_size, secret, unkillable_enemy1_up, unkillable_enemy2_up
+    global enemy, enemy_spawn_point, enemy_size, enemy_dead
     size(1280, 480)
+    import random
+    stars = []
+    add_star = 0
+    # while loop is used instead of a for loop due to the lack of while loops in the 
+    # program and the lack of places where a while loop would be optimal
+    while add_star < 201:
+        stars.append([random.randint(1, 1280), random.randint(1, 350)])
+        add_star += 1
     noStroke()
-    FLOOR = [300]
+    FLOOR = [300, 300]
     MEGAMAN_POSITION = [50, FLOOR[0]]
     PAGE = 1
     LEVEL = 1
-    TIMER = [151, 201]
+    TIMER = [151, 101]
     RESET_TIMER = TIMER[:]
     DEATHS = 0
     GRAVITY = 5
@@ -27,6 +36,7 @@ def setup():
     saw1_X = 1000
     saw1_Y = 100
     saw1_up = False
+    unkillable_enemy1_up, unkillable_enemy2_up = False, True
     saw_size = 100
     megaman_spawn_points = [50, FLOOR[0]]
     title_background = loadImage('title_screen.jpg')
@@ -43,13 +53,18 @@ def setup():
     unkillable_enemies_size = 50
     unkillable = loadImage('unkillable.png')
     unkillable.resize(unkillable_enemies_size, unkillable_enemies_size)
-    unkillable_enemies = [[800, FLOOR[0]], [700, 250], [800, 300]]
-    unkillable_enemies_spawn_points = [[800, FLOOR[0]], [700, 250], [800, 300]]
-    
+    unkillable_enemies = [[800, FLOOR[0]], [700, 250], [1000, 100]]
+    unkillable_enemies_spawn_points = [[800, FLOOR[0]], [700, 250], [1000, 100]]
+    enemy = [600, FLOOR[1]]
+    enemy_size = 50
+    enemy_spawn_point = [600, FLOOR[1]]
+    enemy_dead = False
+    secret = False
+    screen = 1
     
 # Used to track user inputs and move megaman accordingly
 def keyPressed():
-    global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, MEGAMAN_POSITION, on_screen_bullet, in_air
+    global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, MEGAMAN_POSITION, on_screen_bullet, in_air, secret
     if keyCode == RIGHT:
         RIGHT_PRESSED = True
     elif keyCode == LEFT:
@@ -58,11 +73,14 @@ def keyPressed():
         in_air = True
     if keyCode == 32:
         on_screen_bullet = True
+    if keyCode == 77 and PAGE == 6:
+        secret = True
 '''
 TESTING ONLY
     if keyCode == DOWN:
         MEGAMAN_POSITION[1] += 3
 '''
+
 
 def keyReleased():
     global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED
@@ -82,6 +100,9 @@ def mousePressed():
         PAGE = 2
     if PAGE == 2 and mouseX > width/2-rectx/2 and mouseX < width/2+rectx/2 and mouseY > height-125 and mouseY < height-125+recty:
         PAGE = 3
+    if PAGE == 2 and mouseX > 1075 and mouseX < 1175 and mouseY > 200 and mouseY < 210:
+        PAGE = 6
+
 
 def page1():
     background(title_background)
@@ -128,8 +149,11 @@ def page2():
     text("Can you beat the game with zero deaths?", 250, 325) 
     text("(UNKILLABLE)", 1075, 210)
     image(unkillable, 1100, 225)
+    if mouseX > 1075 and mouseX < 1175 and mouseY > 200 and mouseY < 210:
+       fill(0)
+       text("(UNKILLABLE)", 1075, 210)
 
-
+    
 # Code for start button in the instructions menu
     fill(255,255,0)
     rect(width/2-rectx/2, height-125, rectx, recty, 5)  
@@ -140,6 +164,25 @@ def page2():
         rect(width/2-rectx/2, height-125, rectx, recty, 5)  
         fill(218,112,214)
         text("Click here to Start", width/2-rectx+130, height/2+recty+75)
+
+
+def draw_stars():
+    import random
+    fill(255)
+    for star in range(len(stars)):
+        ellipse(stars[star][0], stars[star][1], 5, 5)
+    
+    for star in range(len(stars)):
+        stars[star][0] += 0.1
+    
+    #remove stars
+    for star in range(len(stars)-1, 0, -1):
+        if stars[star-1][0] >= width + 5:
+            stars.pop(star-1)
+            
+    #add new star every second
+    if frameCount % 60 == 0:
+        stars.append([0, random.randint(1, height)])
 
 
 def level1_spikes(x, y, mid):
@@ -154,15 +197,7 @@ def level1_spikes(x, y, mid):
     # Hitbox for spikes.  NOTE: Since the player is not able to clip through the 
     # floor, the collision continues below the spikes all the way to infinity
     if MEGAMAN_POSITION[0] > x/3.5 and MEGAMAN_POSITION[0] < x and MEGAMAN_POSITION[1] > y/1.25:        
-        in_air = False
-        airtime = 0
-        MEGAMAN_POSITION = megaman_spawn_points[:]
-        unkillable_enemies[0][0] = unkillable_enemies_spawn_points[0][0]
-        DEATHS += 1
-        TIMER[0] = RESET_TIMER[0]
-        bullet_timer = 0
-        on_screen_bullet = False
-        draw_bullet = False
+        level1_reset()
 
 
 def level1_saw(x, y):
@@ -180,41 +215,62 @@ def level1_saw(x, y):
         if saw1_Y < 50:
             saw1_up = False
     
-    
     # saw hitbox
     if MEGAMAN_POSITION[0]+megaman_size > saw1_X and MEGAMAN_POSITION[0] < saw1_X + saw_size and MEGAMAN_POSITION[1] < saw1_Y + saw_size/2 and MEGAMAN_POSITION[1] > saw1_Y - saw_size:
-        in_air = False
-        airtime = 0
-        MEGAMAN_POSITION = megaman_spawn_points[:]
-        unkillable_enemies[0][0] = unkillable_enemies_spawn_points[0][0]
-        DEATHS += 1
-        TIMER[0] = RESET_TIMER[0]
-        bullet_timer = 0
-        on_screen_bullet = False
-        draw_bullet = False
+        level1_reset()
+
 
 def unkillable_enemy1_hitbox():
     # If the player hits the enemy, they die, the level resets, and the death counter increments
     global MEGAMAN_POSITION, DEATHS, TIMER, unkillable_enemies, bullet_timer, on_screen_bullet, draw_bullet
     if MEGAMAN_POSITION[0]+megaman_size/1.25 >= unkillable_enemies[0][0] and MEGAMAN_POSITION[0]/0.99 <= unkillable_enemies[0][0]+unkillable_enemies_size and MEGAMAN_POSITION[1] > unkillable_enemies[0][1]-unkillable_enemies_size and MEGAMAN_POSITION[1] < unkillable_enemies[0][1]+unkillable_enemies_size:
-        MEGAMAN_POSITION = megaman_spawn_points[:]
-        unkillable_enemies[0][0] = unkillable_enemies_spawn_points[0][0]
-        DEATHS += 1
-        TIMER[0] = RESET_TIMER[0]
-        bullet_timer = 0
-        on_screen_bullet = False
-        draw_bullet = False
+        level1_reset()
     
     # If the bullet hits this enemy, the bullet despawns and the enemy is left untouched
     if bulletX >= unkillable_enemies[0][0] and bulletX <= unkillable_enemies[0][0]+unkillable_enemies_size and bulletY <= unkillable_enemies[0][1]+bullet_size and bulletY > unkillable_enemies[0][1]-bullet_size:
         bullet_timer = 0
         on_screen_bullet = False
         draw_bullet = False
+    
 
-   
+def unkillable_enemy2_hitbox():
+    global MEGAMAN_POSITION, DEATHS, TIMER, unkillable_enemies, bullet_timer, on_screen_bullet, draw_bullet
+    if MEGAMAN_POSITION[0]+megaman_size/1.25 >= unkillable_enemies[1][0] and MEGAMAN_POSITION[0]/0.99 <= unkillable_enemies[1][0]+unkillable_enemies_size and MEGAMAN_POSITION[1] > unkillable_enemies[1][1]-unkillable_enemies_size and MEGAMAN_POSITION[1] < unkillable_enemies[1][1]+unkillable_enemies_size:
+        level2_reset()
+
+    if bulletX >= unkillable_enemies[1][0] and bulletX <= unkillable_enemies[1][0]+unkillable_enemies_size and bulletY <= unkillable_enemies[1][1]+bullet_size and bulletY > unkillable_enemies[1][1]-bullet_size:
+        bullet_timer = 0
+        on_screen_bullet = False
+        draw_bullet = False
+    
+
+def unkillable_enemy3_hitbox():
+    global MEGAMAN_POSITION, DEATHS, TIMER, unkillable_enemies, bullet_timer, on_screen_bullet, draw_bullet
+    if MEGAMAN_POSITION[0]+megaman_size/1.25 >= unkillable_enemies[2][0] and MEGAMAN_POSITION[0]/0.99 <= unkillable_enemies[2][0]+unkillable_enemies_size and MEGAMAN_POSITION[1] > unkillable_enemies[2][1]-unkillable_enemies_size and MEGAMAN_POSITION[1] < unkillable_enemies[2][1]+unkillable_enemies_size:
+        level2_reset()
+        
+    if bulletX >= unkillable_enemies[2][0] and bulletX <= unkillable_enemies[2][0]+unkillable_enemies_size and bulletY <= unkillable_enemies[2][1]+bullet_size and bulletY > unkillable_enemies[2][1]-bullet_size:
+        bullet_timer = 0
+        on_screen_bullet = False
+        draw_bullet = False  
+        
+def enemy_hitbox():
+    # If the player hits the enemy, they die, the level resets, and the death counter increments
+    global MEGAMAN_POSITION, DEATHS, TIMER, enemy, enemy_dead, bullet_timer, on_screen_bullet, draw_bullet
+    if MEGAMAN_POSITION[0]+megaman_size/1.25 >= enemy[0] and MEGAMAN_POSITION[0]/0.99 <= enemy[0]+enemy_size and MEGAMAN_POSITION[1] > enemy[1]-enemy_size and MEGAMAN_POSITION[1] < enemy[1]+enemy_size:
+        level2_reset()
+    
+    # If the bullet hits this enemy, the bullet despawns and the enemy is left dead
+    if bulletX >= enemy[0] and bulletX <= enemy[0]+enemy_size and bulletY <= enemy[1]+bullet_size and bulletY > enemy[1]-bullet_size:
+        bullet_timer = 0
+        on_screen_bullet = False
+        draw_bullet = False
+        enemy_dead = True
+
 def level1():
-    global LEVEL, PAGE, DEATHS, TIMER, MEGAMAN_POSITION, unkillable_enemies, unkillable_enemies_spawn_points, megaman_spawn_points, bullet_timer, on_screen_bullet, draw_bullet
+    global LEVEL, PAGE, TIMER, MEGAMAN_POSITION, unkillable_enemies, bullet_timer, on_screen_bullet, draw_bullet
     background(0)
+    draw_stars()
     fill(255)
     text("DEATHS:" + str(DEATHS), 10, 15)
     text("TIMER:" + str(int(TIMER[0])), 100, 15)
@@ -230,13 +286,7 @@ def level1():
     TIMER[0] -= 0.1
     
     if TIMER[0] <= 0:
-        DEATHS += 1
-        TIMER[0] = RESET_TIMER[0]
-        MEGAMAN_POSITION = megaman_spawn_points[:]
-        unkillable_enemies[0][0] = unkillable_enemies_spawn_points[0][0]
-        bullet_timer = 0
-        on_screen_bullet = False
-        draw_bullet = False
+      level1_reset()
     
     if draw_bullet == True:
         fill(255)
@@ -248,26 +298,54 @@ def level1():
         on_screen_bullet = False
         bullet_timer = 0
         MEGAMAN_POSITION = megaman_spawn_points[:]
-               
+
+                              
 def level2():
-    global LEVEL, PAGE, DEATHS, TIMER, MEGAMAN_POSITION, unkillable_enemies, unkillable_enemies_spawn_points, megaman_spawn_points, bullet_timer, on_screen_bullet, draw_bullet
-    background(255)
-    fill(0)
+    global LEVEL, PAGE, TIMER, MEGAMAN_POSITION, unkillable_enemies, unkillable_enemy1_up, unkillable_enemy2_up, bullet_timer, on_screen_bullet, draw_bullet
+    background(0)
+    draw_stars()
+    fill(255)
     text("DEATHS:" + str(DEATHS), 10, 15)
     text("TIMER:" + str(int(TIMER[1])), 100, 15)
     rect(0, 350, width, height)
     fill(255,0,0)
     rect(MEGAMAN_POSITION[0], MEGAMAN_POSITION[1], megaman_size, megaman_size)
+    image(unkillable, unkillable_enemies[1][0], unkillable_enemies[1][1])
+    image(unkillable, unkillable_enemies[2][0], unkillable_enemies[2][1])
+   
+   # Moves the first unkillable enemy up and down
+    if unkillable_enemy1_up == False:
+        unkillable_enemies[1][1] += 4
+        if unkillable_enemies[1][1] >= 300:
+            unkillable_enemy1_up = True
+    if unkillable_enemy1_up == True:
+        unkillable_enemies[1][1] -= 4
+        if unkillable_enemies[1][1] < 10:
+            unkillable_enemy1_up = False
+
+    # Moves the second unkillable enemy up and down
+    if unkillable_enemy2_up == False:
+        unkillable_enemies[2][1] += 4
+        if unkillable_enemies[2][1] >= 300:
+            unkillable_enemy2_up = True
+    if unkillable_enemy2_up == True:
+        unkillable_enemies[2][1] -= 4
+        if unkillable_enemies[2][1] < 10:
+            unkillable_enemy2_up = False
+
+    unkillable_enemy2_hitbox()
+    unkillable_enemy3_hitbox()
+    
+    if enemy_dead == False:
+        enemy_hitbox()
+        fill(0, 0, 255)
+        rect(enemy[0], enemy[1], enemy_size, enemy_size)
+        enemy[0] -= 5
+        
     TIMER[1] -= 0.1
     
     if TIMER[1] <= 0:
-        DEATHS += 1
-        TIMER[1] = RESET_TIMER[1]
-        MEGAMAN_POSITION = megaman_spawn_points[:]
-        unkillable_enemies[0][0] = unkillable_enemies_spawn_points[0][0]
-        bullet_timer = 0
-        on_screen_bullet = False
-        draw_bullet = False
+        level2_reset()
     
     if draw_bullet == True:
         fill(255)
@@ -280,8 +358,33 @@ def level2():
         on_screen_bullet = False
         bullet_timer = 0
     '''    
-           
-def page3():
+    
+def level1_reset():
+    global DEATHS, TIMER, MEGAMAN_POSITION, unkillable_enemies, unkillable_enemies_spawn_points, megaman_spawn_points, bullet_timer, on_screen_bullet, draw_bullet
+    DEATHS += 1
+    TIMER[0] = RESET_TIMER[0]
+    MEGAMAN_POSITION = megaman_spawn_points[:]
+    unkillable_enemies[0][0] = unkillable_enemies_spawn_points[0][0]
+    bullet_timer = 0
+    on_screen_bullet = False
+    draw_bullet = False
+
+
+def level2_reset():
+    global DEATHS, TIMER, MEGAMAN_POSITION, unkillable_enemies, unkillable_enemies_spawn_points, megaman_spawn_points, enemy, enemy_spawn_point, bullet_timer, on_screen_bullet, draw_bullet, enemy_dead
+    DEATHS += 1
+    TIMER[1] = RESET_TIMER[1]
+    MEGAMAN_POSITION = megaman_spawn_points[:]
+    unkillable_enemies[1][1] = unkillable_enemies_spawn_points[1][1]
+    unkillable_enemies[2][1] = unkillable_enemies_spawn_points[2][1]
+    enemy[0] = enemy_spawn_point[0]
+    bullet_timer = 0
+    on_screen_bullet = False
+    draw_bullet = False
+    enemy_dead = False
+        
+    
+def physics():
     global LEVEL, PAGE, MEGAMAN_POSITION, bulletX, bulletY, on_screen_bullet, bullet_timer, draw_bullet
     global in_air, airtime
     if RIGHT_PRESSED == True:
@@ -293,6 +396,10 @@ def page3():
         if airtime > 10:
             MEGAMAN_POSITION[1] += 1
             if LEVEL == 1 and MEGAMAN_POSITION[1] > FLOOR[0]: 
+                airtime = 0
+                in_air = False
+                MEGAMAN_POSITION[1] = FLOOR[0]
+            if LEVEL == 2 and MEGAMAN_POSITION[1] > FLOOR[1]: 
                 airtime = 0
                 in_air = False
                 MEGAMAN_POSITION[1] = FLOOR[0]
@@ -313,14 +420,23 @@ def page3():
             draw_bullet = False
             on_screen_bullet = False
             bullet_timer = 0
-    print(LEVEL)
-   
+
+
+def page3():
+    physics()   
     if LEVEL == 1:
-        level1()
-         
+        level1()         
     if LEVEL == 2:
         level2()
-        
+
+def page6():
+    global PAGE
+    background(0)
+    fill(255)
+    text("Hey uh you're not supposed to be here so just reset the program and go back ok?", width/2-400, height/2)
+    if secret == True:
+        PAGE = 4 #Warps to boss fight
+
 def draw():
     global DEATHS
     if PAGE == 1:
@@ -330,3 +446,7 @@ def draw():
         page2()
     elif PAGE == 3:
         page3()
+    elif PAGE == 4:
+        pass
+    elif PAGE == 6:
+        page6()
