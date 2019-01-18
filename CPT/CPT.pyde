@@ -4,7 +4,9 @@ def setup():
     global zero_deaths, megaman_spawn_points, on_screen_bullet, bulletX, bulletY, bullet_size, bullet_timer, draw_bullet
     global unkillable, unkillable_enemies, unkillable_enemies_size, megaman_size, unkillable_enemies_spawn_points
     global in_air, airtime, floor_collision, saw1_X, saw1_Y, saw1_up, saw_size, secret, unkillable_enemy1_up, unkillable_enemy2_up
-    global enemy, enemy_spawn_point, enemy_size, enemy_dead
+    global enemy, enemy_spawn_point, enemy_size, enemy_dead, 
+    global shooter, shooter_size, shooter_bullet, shooter_bulletX
+    global shooter_bulletY, shooter_bullet_timer, draw_shooter_bullet
     size(1280, 480)
     import random
     stars = []
@@ -15,11 +17,11 @@ def setup():
         stars.append([random.randint(1, 1280), random.randint(1, 350)])
         add_star += 1
     noStroke()
-    FLOOR = [300, 300]
+    FLOOR = [300, 300, 300, 300]
     MEGAMAN_POSITION = [50, FLOOR[0]]
     PAGE = 1
     LEVEL = 1
-    TIMER = [151, 101]
+    TIMER = [151, 101, 101, 501]
     RESET_TIMER = TIMER[:]
     DEATHS = 0
     GRAVITY = 5
@@ -59,9 +61,16 @@ def setup():
     enemy_size = 50
     enemy_spawn_point = [600, FLOOR[1]]
     enemy_dead = False
+    shooter = [[1000, FLOOR[2]], [50, FLOOR[3]], [1100, FLOOR[3]]]
+    shooter_size = 50
+    shooter_bullet = [False, False, False]
+    draw_shooter_bullet = [False, False, False]
+    shooter_bulletX = [1000, 50, 1100]
+    shooter_bulletY = [FLOOR[2], FLOOR[3], FLOOR[3]]
+    shooter_bullet_timer = [0, 0, 0]
     secret = False
-    screen = 1
-    
+
+        
 # Used to track user inputs and move megaman accordingly
 def keyPressed():
     global LEFT_PRESSED, RIGHT_PRESSED, UP_PRESSED, MEGAMAN_POSITION, on_screen_bullet, in_air, secret
@@ -254,6 +263,7 @@ def unkillable_enemy3_hitbox():
         on_screen_bullet = False
         draw_bullet = False  
         
+        
 def enemy_hitbox():
     # If the player hits the enemy, they die, the level resets, and the death counter increments
     global MEGAMAN_POSITION, DEATHS, TIMER, enemy, enemy_dead, bullet_timer, on_screen_bullet, draw_bullet
@@ -261,12 +271,37 @@ def enemy_hitbox():
         level2_reset()
     
     # If the bullet hits this enemy, the bullet despawns and the enemy is left dead
-    if bulletX >= enemy[0] and bulletX <= enemy[0]+enemy_size and bulletY <= enemy[1]+bullet_size and bulletY > enemy[1]-bullet_size:
+    if (bulletX >= enemy[0] and bulletX <= enemy[0]+enemy_size and
+            bulletY <= enemy[1]+bullet_size and
+            bulletY > enemy[1]-bullet_size):
         bullet_timer = 0
         on_screen_bullet = False
         draw_bullet = False
         enemy_dead = True
 
+
+def shooter_enemy1():
+    # If the player hits the enemy, they die, the level resets, and the death counter increments
+    global MEGAMAN_POSITION, DEATHS, TIMER, shooter, shooter_bullet_timer, bullet_timer, on_screen_bullet, draw_bullet
+    if (MEGAMAN_POSITION[0]+megaman_size/1.25 >= shooter[0][0] and 
+        MEGAMAN_POSITION[0]/0.99 <= shooter[0][0]+shooter_size and 
+        MEGAMAN_POSITION[1] > shooter[0][1]-shooter_size and 
+        MEGAMAN_POSITION[1] < shooter[0][1]+shooter_size):
+        level3_reset()
+        
+    if bulletX >= shooter[0][0] and bulletX <= shooter[0][0]+shooter_size and bulletY <= shooter[0][1]+bullet_size and bulletY > shooter[0][1]-bullet_size:
+        bullet_timer = 0
+        on_screen_bullet = False
+        draw_bullet = False 
+   
+    if shooter_bullet_timer[0] > 120:
+        print(True)
+        draw_shooter_bullet[0] = True
+    else:
+        shooter_bullet_timer[0] += 1
+        print(False)
+    
+    
 def level1():
     global LEVEL, PAGE, TIMER, MEGAMAN_POSITION, unkillable_enemies, bullet_timer, on_screen_bullet, draw_bullet
     background(0)
@@ -343,7 +378,6 @@ def level2():
         enemy[0] -= 5
         
     TIMER[1] -= 0.1
-    
     if TIMER[1] <= 0:
         level2_reset()
     
@@ -351,14 +385,44 @@ def level2():
         fill(255)
         rect(bulletX, bulletY, bullet_size, bullet_size)
    
-    '''        
     if MEGAMAN_POSITION[0] > 1200:
         LEVEL = 3
         draw_bullet = False
         on_screen_bullet = False
         bullet_timer = 0
-    '''    
+        MEGAMAN_POSITION = megaman_spawn_points[:]
+
+
+def level3():
+    global LEVEL, PAGE, TIMER, MEGAMAN_POSITION, unkillable_enemies, bullet_timer, on_screen_bullet, draw_bullet
+    background(0)
+    draw_stars()
+    fill(255)
+    text("DEATHS:" + str(DEATHS), 10, 15)
+    text("TIMER:" + str(int(TIMER[2])), 100, 15)
+    rect(0, 350, width, height)
+    fill(255,0,0)
+    rect(MEGAMAN_POSITION[0], MEGAMAN_POSITION[1], megaman_size, megaman_size)
+    fill(0, 255, 0)
+    rect(shooter[0][0], shooter[0][1], shooter_size, shooter_size)
+    shooter_enemy1()
+    TIMER[2] -= 0.1
     
+    if TIMER[2] <= 0:
+      level3_reset()
+    
+    if draw_bullet == True:
+        fill(255)
+        rect(bulletX, bulletY, bullet_size, bullet_size)
+            
+    if MEGAMAN_POSITION[0] > 1200:
+        PAGE = 4
+        draw_bullet = False
+        on_screen_bullet = False
+        bullet_timer = 0
+        MEGAMAN_POSITION = megaman_spawn_points[:]
+        
+            
 def level1_reset():
     global DEATHS, TIMER, MEGAMAN_POSITION, unkillable_enemies, unkillable_enemies_spawn_points, megaman_spawn_points, bullet_timer, on_screen_bullet, draw_bullet
     DEATHS += 1
@@ -383,6 +447,16 @@ def level2_reset():
     draw_bullet = False
     enemy_dead = False
         
+        
+def level3_reset():
+    global DEATHS, TIMER, MEGAMAN_POSITION, megaman_spawn_points, bullet_timer, on_screen_bullet, draw_bullet
+    DEATHS += 1
+    TIMER[2] = RESET_TIMER[2]
+    MEGAMAN_POSITION = megaman_spawn_points[:]
+    bullet_timer = 0
+    on_screen_bullet = False
+    draw_bullet = False  
+    
     
 def physics():
     global LEVEL, PAGE, MEGAMAN_POSITION, bulletX, bulletY, on_screen_bullet, bullet_timer, draw_bullet
@@ -402,7 +476,11 @@ def physics():
             if LEVEL == 2 and MEGAMAN_POSITION[1] > FLOOR[1]: 
                 airtime = 0
                 in_air = False
-                MEGAMAN_POSITION[1] = FLOOR[0]
+                MEGAMAN_POSITION[1] = FLOOR[1]
+            if LEVEL == 3 and MEGAMAN_POSITION[1] > FLOOR[2]: 
+                airtime = 0
+                in_air = False
+                MEGAMAN_POSITION[1] = FLOOR[2]
         else:
             MEGAMAN_POSITION[1] -= 2
 
@@ -428,6 +506,8 @@ def page3():
         level1()         
     if LEVEL == 2:
         level2()
+    if LEVEL == 3:
+        level3()
 
 def page6():
     global PAGE
