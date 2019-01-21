@@ -12,13 +12,14 @@ def setup():
     global enemy_dead, shooter, shooter_size, shooter_bullet, shooter_bulletX
     global shooter_bulletY, shooter_bullet_timer, draw_shooter_bullet
     global megaman_spawn_point_boss, boss, boss_size, drop_timer, boss_left
-    global boss_timer, boss_tracker, boss_spawn_point, boss_hits, congratulations
+    global boss_timer, boss_tracker, boss_spawn_point, boss_hits
+    global congratulations
 
     size(1280, 480)
     noStroke()
     import random
 
-    # Used to draw stars. This code is used in the draw_stars function 
+    # Used to draw stars. This code is used in the draw_stars function
     stars = []
     add_star = 0
     # while loop is used instead of a for loop due to the lack of while
@@ -120,7 +121,7 @@ def keyReleased():
 
 # Used to check the mouse's location.  This is used on the intro screen
 # to either take the player to the main game or to the instructions
-# and on the instuctions screen to warp you to either warp you to 
+# and on the instuctions screen to warp you to either warp you to
 # the begining of the game, or to the secret boss warp screen
 def mousePressed():
     global rectx, recty, PAGE
@@ -208,7 +209,7 @@ def page2():
     image(unkillable, 1100, 225)
     fill(0, 255, 0)
     rect(1100, 300, 50, 50)
-    
+
     # Secret warp to the boss warp screen
     if mouseX > 1075 and mouseX < 1175 and mouseY > 200 and mouseY < 210:
         fill(0)
@@ -230,7 +231,7 @@ def page2():
 
 # Code used to draw stars in the background for asthetics
 def draw_stars():
-    import random    
+    import random
     fill(255)
     for star in range(len(stars)):
         ellipse(stars[star][0], stars[star][1], 5, 5)
@@ -311,8 +312,8 @@ def unkillable_enemy1_hitbox():
     # enemy is left untouched
     if (bulletX >= unkillable_enemies[0][0] and bulletX <=
             unkillable_enemies[0][0]+unkillable_enemies_size and
-            bulletY <= unkillable_enemies[0][1]
-            +unkillable_enemies_size and
+            bulletY <= unkillable_enemies[0][1] +
+            unkillable_enemies_size and
             bulletY > unkillable_enemies[0][1]-bullet_size):
         bullet_timer = 0
         on_screen_bullet = False
@@ -334,15 +335,16 @@ def unkillable_enemy2_hitbox():
         level2_reset()
 
 # If the player shoots at the enemy, the bullet despawns and
-# nothing happens 
+# nothing happens
     if (bulletX >= unkillable_enemies[1][0] and bulletX <=
             unkillable_enemies[1][0]+unkillable_enemies_size and
-            bulletY <= unkillable_enemies[1][1]
-            +unkillable_enemies_size and
+            bulletY <= unkillable_enemies[1][1] +
+            unkillable_enemies_size and
             bulletY > unkillable_enemies[1][1]-bullet_size):
         bullet_timer = 0
         on_screen_bullet = False
         draw_bullet = False
+
 
 # An unkillable enemy that moves up and down (level 2)
 def unkillable_enemy3_hitbox():
@@ -362,7 +364,7 @@ def unkillable_enemy3_hitbox():
 # nothing happens
     if (bulletX >= unkillable_enemies[2][0] and
             bulletX <= unkillable_enemies[2][0] + unkillable_enemies_size and
-            bulletY <= unkillable_enemies[2][1]+
+            bulletY <= unkillable_enemies[2][1] +
             unkillable_enemies_size and
             bulletY > unkillable_enemies[2][1]-bullet_size):
         bullet_timer = 0
@@ -391,7 +393,7 @@ def enemy_hitbox():
         draw_bullet = False
         enemy_dead = True
 
-    
+
 def shooter_enemy1():
     # If the player hits the enemy, they die, the level resets
     # and the death counter increments
@@ -421,7 +423,7 @@ def shooter_enemy1():
         shooter_bulletX[0] = shooter[0][0]
 
     shooter_bullet_timer[0] += 1
-    
+
     # enemy bullet collision detection
     if (shooter_bulletX[0] >= MEGAMAN_POSITION[0] and
             shooter_bulletX[0] <= MEGAMAN_POSITION[0]+megaman_size and
@@ -459,13 +461,14 @@ def shooter_enemy2():
         shooter_bulletX[1] = shooter[1][0]
 
     shooter_bullet_timer[1] += 1
-    
+
     # enemy bullet collision detection
     if (shooter_bulletX[1] >= MEGAMAN_POSITION[0] and
             shooter_bulletX[1] <= MEGAMAN_POSITION[0]+megaman_size and
             shooter_bulletY <= MEGAMAN_POSITION[1]+megaman_size and
             shooter_bulletY > MEGAMAN_POSITION[1]-bullet_size):
         level4_reset()
+
 
 def shooter_enemy3():
     # If the player hits the enemy, they die, the level resets
@@ -496,7 +499,7 @@ def shooter_enemy3():
         shooter_bulletX[2] = shooter[2][0]
 
     shooter_bullet_timer[2] += 1
-    
+
     # enemy bullet collision detection
     if (shooter_bulletX[2] >= MEGAMAN_POSITION[0] and
             shooter_bulletX[2] <= MEGAMAN_POSITION[0]+megaman_size and
@@ -542,6 +545,7 @@ def level1():
         on_screen_bullet = False
         bullet_timer = 0
         MEGAMAN_POSITION = megaman_spawn_points[:]
+
 
 # Second level
 def level2():
@@ -605,6 +609,7 @@ def level2():
         bullet_timer = 0
         MEGAMAN_POSITION = megaman_spawn_points[:]
 
+
 # Third level in the game
 def level3():
     global LEVEL, PAGE, TIMER, MEGAMAN_POSITION, unkillable_enemies
@@ -635,13 +640,14 @@ def level3():
         on_screen_bullet = False
         bullet_timer = 0
         MEGAMAN_POSITION = megaman_spawn_point_boss[:]
-    
+
     # Dictates if the program should draw the enemy's bullet.
     # Same for boss battle
     if draw_shooter_bullet[0] is True:
         fill(255)
         rect(shooter_bulletX[0], shooter_bulletY, bullet_size, bullet_size)
-        
+
+
 # Code for the final boss
 def boss_battle():
     global boss, boss_left, drop_timer, boss_timer, boss_tracker
@@ -734,7 +740,7 @@ def page4():
     if draw_bullet is True:
         fill(255)
         rect(bulletX, bulletY, bullet_size, bullet_size)
-    
+
     if draw_shooter_bullet[1] is True:
         fill(255)
         rect(shooter_bulletX[1], shooter_bulletY, bullet_size, bullet_size)
@@ -844,7 +850,7 @@ def physics():
         MEGAMAN_POSITION[0] += 3
     if LEFT_PRESSED is True and MEGAMAN_POSITION[0] > 0:
         MEGAMAN_POSITION[0] -= 3
-    
+
     # Determines if the player is allowed to jump
     if in_air is True:
         airtime += 0.2
@@ -889,7 +895,7 @@ def page6():
     background(0)
     fill(255)
     text("Hey uh you're not supposed to be here so just reset" +
-         "the program and go back ok?", width/2 - 400, height/2)
+         " the program and go back ok?", width/2 - 400, height/2)
     if secret is True:
         PAGE = 4  # Warps to boss fight
 
