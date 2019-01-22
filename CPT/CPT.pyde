@@ -761,6 +761,10 @@ def page4():
 # Congratulations screen
 def page5():
     background(0)
+    # The congratulations message is a reference to Ghosts 'n
+    # Goblins, arguably one of the worst games ever made on
+    # the NES due to its horrendus controls and
+    # extreme difficulty
     image(congratulations, width/2-150, height/2-100)
 
 
@@ -903,6 +907,8 @@ def page6():
 # Nothing more than a small Easter egg if the player beats the
 # game flawless
 def page7():
+    # A reference to PewDiePie. Go subscribe to him
+    # so he can beat T Series
     background(255)
     image(zero_deaths, width/2-150, height/2-250)
 
