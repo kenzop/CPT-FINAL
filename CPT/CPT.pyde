@@ -649,6 +649,10 @@ def level3():
 
 
 # Code for the final boss
+# NOTE: Due to the difficulty of the final boss, the amount of
+# damage delt to him is carried over if the player dies.
+# Therefore, the boss only needs to be hit three times in total
+# rather than in one attempt
 def boss_battle():
     global boss, boss_left, drop_timer, boss_timer, boss_tracker
     global boss_hits, bullet_timer, on_screen_bullet, draw_bullet
